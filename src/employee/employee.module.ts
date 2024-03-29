@@ -6,7 +6,7 @@ import {
   } from './employee.service';
   import {
     EmployeeController
-  } from './employee.controller';
+    } from './employee.controller';
   import {
     Employee,
     EmployeeSchema
@@ -17,6 +17,7 @@ import {
   
   @Module({
     imports: [
+      
      MongooseModule.forFeature([
         {
           name: Employee.name,

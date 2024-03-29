@@ -1,10 +1,10 @@
 import {
   PartialType
 } from '@nestjs/mapped-types';
-import { Hobbies, Role} from '../utills/enums/enum'
+import { Hobbies,Role} from '../utills/enums/enum'
 
 
-export class CreateEmployeeDto {
+export class CreateCustomerDto {
   id: string;
   firstName: string;
   lastName: string;
@@ -17,8 +17,15 @@ export class CreateEmployeeDto {
   otpExpiration: Date;
 }
 
-export class UpdateEmployeeDto extends PartialType(CreateEmployeeDto) { 
+export class UpdateCustomerDto extends PartialType(CreateCustomerDto) { 
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+export class LoginCustomerDto {
+  email?: string;
+  password?: string;
+  role?: string;
+  id?: string
 }

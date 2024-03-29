@@ -7,13 +7,13 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { EmployeeModule } from 'src/employee/employee.module';
+import { CustomerModule } from 'src/customer/customer.module';
 
 
 @Module({
 
   imports: [
-    EmployeeModule,
+    forwardRef(() =>CustomerModule),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: 'secret',

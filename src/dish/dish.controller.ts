@@ -8,23 +8,24 @@ import {
   Query
 } from '@nestjs/common';
 import {
-  EmployeeService
-} from './employee.service';
+  DishService
+} from './dish.service';
 import {
   CreateEmployeeDto
 } from '../dto/employee.dto';
-import { employeeSignupValidation } from 'src/schema/employee.schema';
+import { CreateDishDto } from 'src/dto/dish.dto';
+import { createDishValidation } from 'src/schema/dish.schema';
 
 
 
-@Controller('employee')
-export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) { }
+@Controller('dish')
+export class DishController {
+  constructor(private readonly dishService: DishService) { }
 
   @Post('/create')
-  create(@Body() createEmployeeDto: CreateEmployeeDto) {
+  create(@Body() createDishDto: CreateDishDto) {
 
-    const validator = employeeSignupValidation.validate(createEmployeeDto, { abortEarly: false })
+    const validator = createDishValidation.validate(createDishDto, { abortEarly: false })
     if (validator.error) {
       const errorMessage = validator.error.details.map(
         (error) => error.message,
@@ -32,7 +33,7 @@ export class EmployeeController {
       return { message: 'Validation Failed', errors: errorMessage };
     }
 
-    return this.employeeService.create(createEmployeeDto);
+    return this.dishService.create(createDishDto);
   }
 
 
@@ -40,17 +41,17 @@ export class EmployeeController {
   @Get('/getAll')
   async findAll(@Query() model) {
     try {
-      return (await this.employeeService.findAll(model));
+      return await this.dishService.findAll(model);
     } catch (error) {
       return error
     }
   } 
 
 
-  @Get('/getEmployeeById:id')
+  @Get('/getDishById:id')
   async findOne(@Param('id') id: string) {
     try {
-      return this.employeeService.findOne(id);
+      return await this.dishService.findOne(id);
     } catch (error) {
       return error
     }
@@ -60,7 +61,7 @@ export class EmployeeController {
   @Delete('/delete:id')
   remove(@Param('id') id: string) {
     try {
-      return this.employeeService.remove(id);
+      return this.dishService.remove(id);
     } catch (error) {
       return error
     }

@@ -12,35 +12,29 @@ import {
 import {
   nanoid
 } from 'nanoid';
-import { Role } from 'src/utills/enums/enum';
+import { Category } from 'src/utills/enums/enum';
 import { Restaurant } from './restaurant.model';
 
-export type EmployeeDocument = Employee & Document;
+export type DishDocument = Dish & Document;
 
 @Schema()
-export class Employee {
+export class Dish {
 
   @IsString()
   @Prop({ default: () => nanoid() })
-  _id: string;
+  _id: String;
 
   @Prop({ default: false, required: true })
-  firstName: string;
+  name: String;
 
   @Prop()
-  lastName: string;
+  slug: String;
 
   @Prop()
-  email: string;
+  price: Number;
 
-  @Prop()
-  address: string;
-
-  @Prop()
-  password: string;
-
-  @Prop({ default: Role.Staff })
-  role: string;
+  @Prop({ default: Category})
+  category: String;
 
   @Prop({ default: () => moment() })
   createdAt: Number;
@@ -49,13 +43,7 @@ export class Employee {
   updatedAt: Number;
 
   @Prop()
-  otp: number;
-
-  @Prop()
-  otpExpiration: number;
-
-  @Prop()
-  restaurantId: string;
+  restaurantId: String;
   ref: Restaurant
 
   @Prop({ default: true })
@@ -63,4 +51,4 @@ export class Employee {
 
 }
 
-export const EmployeeSchema = SchemaFactory.createForClass(Employee);
+export const DishSchema = SchemaFactory.createForClass(Dish);

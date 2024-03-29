@@ -11,27 +11,27 @@ import {
   AuthService
 } from './auth.service';
 import {
-  LoginEmployeeDto
-} from '../dto/login-employee.dto';
-import { User } from '../user/user.entity';
+  LoginDto
+} from '../dto/auth.dto';
 
-import { employeeResetValidation, employeeForgetValidation, employeeLoginValidation, employeeUpdateValidation, forgotPasswordEmail } from 'src/schema/employee.schema';
-import { CreateEmployeeDto, UpdateEmployeeDto } from 'src/dto/create-employee.dto';
-import { EmployeeService } from 'src/employee/employee.service';
+import { customerResetValidation, customerForgetValidation, customerLoginValidation, customerUpdateValidation, forgotPasswordEmail } from 'src/schema/customer.schema';
+import { UpdateDto } from 'src/dto/auth.dto';
+import { CreateCustomerDto} from 'src/dto/customer.dto';
+import { CustomerService } from 'src/customer/customer.service';
 
 
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService,
-    private readonly employeeService: EmployeeService) { }
+    private readonly customerService: CustomerService) { }
 
 
   
   @Post('/login')
-  login(@Body() loginEmployeeDto: LoginEmployeeDto) {
+  login(@Body() loginDto: LoginDto) {
 
-    const validator = employeeLoginValidation.validate(loginEmployeeDto, { abortEarly: false })
+    const validator = customerLoginValidation.validate(loginDto, { abortEarly: false })
     if (validator.error) {
       const errorMessage = validator.error.details.map(
         (error) => error.message,
@@ -39,22 +39,23 @@ export class AuthController {
       return { message: 'Validation Failed', errors: errorMessage };
     }
 
+    console.log(loginDto)
    
 
-    return this.authService.login(loginEmployeeDto);
+    return this.authService.login(loginDto);
   }
 
   @Put('/updatePassword')
-  changePassword(@Body() updateEmployeeDto: UpdateEmployeeDto) {
+  changePassword(@Body() updateDto: UpdateDto) {
     try {
-      const validator = employeeResetValidation.validate(updateEmployeeDto, { abortEarly: false })
+      const validator = customerResetValidation.validate(updateDto, { abortEarly: false })
       if (validator.error) {
         const errorMessage = validator.error.details.map(
           (error) => error.message,
         )
         return { message: 'Validation Failed', errors: errorMessage };
       }
-      return this.employeeService.changePassword(updateEmployeeDto);
+      return this.customerService.changePassword(updateDto);
     }
 
     catch (error) {
@@ -64,16 +65,16 @@ export class AuthController {
 
 
   @Put('/forgetPassword')
-  resetPassword(@Body() updateEmployeeDto: UpdateEmployeeDto) {
+  resetPassword(@Body() updateDto: UpdateDto) {
     try {
-      const validator = employeeForgetValidation.validate(updateEmployeeDto, { abortEarly: false })
+      const validator = customerForgetValidation.validate(updateDto, { abortEarly: false })
       if (validator.error) {
         const errorMessage = validator.error.details.map(
           (error) => error.message,
         )
         return { message: 'Validation Failed', errors: errorMessage };
       }
-      return this.employeeService.resetPassword(updateEmployeeDto);
+      return this.customerService.resetPassword(updateDto);
     }
 
     catch (error) {
@@ -82,16 +83,16 @@ export class AuthController {
   }
 
   @Post('/forgetPasswordEmail')
-  forgetPasswordEmail(@Body() createEmployeeDto: CreateEmployeeDto) {
+  forgetPasswordEmail(@Body() createCustomerDto: CreateCustomerDto) {
     try {
-      const validator = forgotPasswordEmail.validate(createEmployeeDto, { abortEarly: false })
+      const validator = forgotPasswordEmail.validate(createCustomerDto, { abortEarly: false })
       if (validator.error) {
         const errorMessage = validator.error.details.map(
           (error) => error.message,
         )
         return { message: 'Validation Failed', errors: errorMessage };
       }
-      return this.employeeService.forgetPasswordEmail(createEmployeeDto);
+      return this.customerService.forgetPasswordEmail(createCustomerDto);
     }
 
     catch (error) {
@@ -100,17 +101,17 @@ export class AuthController {
   }
 
 
-  @Put('/updateEmployeeById/:id')
-  update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
+  @Put('/updateCustomerById/:id')
+  update(@Param('id') id: string, @Body() updateDto: UpdateDto) {
     try {
-      const validator = employeeUpdateValidation.validate(updateEmployeeDto, { abortEarly: false })
+      const validator = customerUpdateValidation.validate(updateDto, { abortEarly: false })
       if (validator.error) {
         const errorMessage = validator.error.details.map(
           (error) => error.message,
         )
         return { message: 'Validation Failed', errors: errorMessage };
       }
-      return this.employeeService.updateDetails(id, updateEmployeeDto);
+      return this.customerService.updateDetails(id, updateDto);
     }
 
     catch (error) {

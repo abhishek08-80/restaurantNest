@@ -8,23 +8,24 @@ import {
   Query
 } from '@nestjs/common';
 import {
-  EmployeeService
-} from './employee.service';
+  OrderService
+} from './order.service';
 import {
   CreateEmployeeDto
 } from '../dto/employee.dto';
-import { employeeSignupValidation } from 'src/schema/employee.schema';
+import { CreateOrderDto } from 'src/dto/order.dto';
+import { createOrderValidation } from 'src/schema/order.schema';
 
 
 
-@Controller('employee')
-export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) { }
+@Controller('order')
+export class OrderController {
+  constructor(private readonly orderService: OrderService) { }
 
   @Post('/create')
-  create(@Body() createEmployeeDto: CreateEmployeeDto) {
+  create(@Body() createOrderDto: CreateOrderDto) {
 
-    const validator = employeeSignupValidation.validate(createEmployeeDto, { abortEarly: false })
+    const validator = createOrderValidation.validate(createOrderDto, { abortEarly: false })
     if (validator.error) {
       const errorMessage = validator.error.details.map(
         (error) => error.message,
@@ -32,7 +33,7 @@ export class EmployeeController {
       return { message: 'Validation Failed', errors: errorMessage };
     }
 
-    return this.employeeService.create(createEmployeeDto);
+    return this.orderService.create(createOrderDto);
   }
 
 
@@ -40,17 +41,17 @@ export class EmployeeController {
   @Get('/getAll')
   async findAll(@Query() model) {
     try {
-      return (await this.employeeService.findAll(model));
+      return await this.orderService.findAll(model);
     } catch (error) {
       return error
     }
   } 
 
 
-  @Get('/getEmployeeById:id')
+  @Get('/getOrderById:id')
   async findOne(@Param('id') id: string) {
     try {
-      return this.employeeService.findOne(id);
+      return await this.orderService.findOne(id);
     } catch (error) {
       return error
     }
@@ -60,7 +61,7 @@ export class EmployeeController {
   @Delete('/delete:id')
   remove(@Param('id') id: string) {
     try {
-      return this.employeeService.remove(id);
+      return this.orderService.remove(id);
     } catch (error) {
       return error
     }

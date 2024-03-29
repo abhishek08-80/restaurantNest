@@ -1,5 +1,6 @@
 import {
-  Injectable
+  Inject,
+  Injectable, forwardRef
 } from '@nestjs/common';
 import {
   InjectModel
@@ -8,8 +9,8 @@ import {
   Model
 } from 'mongoose';
 import {
-  CreateEmployeeDto
-} from '../dto/employee.dto';
+  CreateCustomerDto
+} from '../dto/customer.dto';
 import {
   UpdateDto
 } from '../dto/auth.dto';
@@ -17,40 +18,38 @@ import {
   LoginDto
 } from '../dto/auth.dto';
 import {
-  Employee,
-  EmployeeDocument
-} from '../model/employee.model';
+  Customer,
+  CustomerDocument
+} from '../model/customer.model';
 import * as bcrypt from 'bcrypt';
 // import { count } from 'console';
 import { mailTransporter } from 'src/email/email';
+import { AuthService } from 'src/auth/auth.service';
 
 
 @Injectable()
-export class EmployeeService {
+export class CustomerService {
 
-  constructor(@InjectModel(Employee.name) private readonly employeeModel: Model<EmployeeDocument>) { }
+  constructor(@InjectModel(Customer.name) private readonly customerModel: Model<CustomerDocument>
 
-  async create(createEmployeeDto: CreateEmployeeDto): Promise<EmployeeDocument> {
+  ) { }
+
+  async create(createCustomerDto: CreateCustomerDto): Promise<CustomerDocument> {
     const result: any = { data: [], metadata: null, error: [] }
 
     try {
-      const { restaurantId, email, password } = createEmployeeDto;
-      const existingUser: CreateEmployeeDto = await this.employeeModel.findOne({ email })
+      const { email, password } = createCustomerDto;
+      const existingUser: CreateCustomerDto = await this.customerModel.findOne({ email })
       if (existingUser) {
         result.error = { message: "employee with this email already exists" }
         return result
       }
-      const validRestaurant: CreateEmployeeDto = await this.employeeModel.findOne({restaurantId})
-      if(!validRestaurant){
-        result.error = { message: "restaurant does not exists" }
-        return result
-      }
       if (!existingUser) {
-        const employee = new this.employeeModel(createEmployeeDto);
+        const customer = new this.customerModel(createCustomerDto);
         const pass = await this.hashPassword(password)
-        employee.password = pass
+        customer.password = pass
 
-        const mailDetails = { 
+        const mailDetails = {
           // from: '',
           to: email,
           subject: 'Account created.',
@@ -64,14 +63,20 @@ export class EmployeeService {
             console.log('Email sent successfully');
           }
         });
-        return await employee.save()
+
+        return await customer.save()
       }
     } catch (error) {
+      console.log(error)
       return error
     }
   }
 
-  async findAll(model: any): Promise<EmployeeDocument[]> {
+
+
+
+
+  async findAll(model: any): Promise<CustomerDocument[]> {
     const result: any = { data: [], metadata: [], error: null }
 
     try {
@@ -82,10 +87,10 @@ export class EmployeeService {
         limit = 2
       }
       if (search == undefined) {
-        result.data = await this.employeeModel.find().limit(limit).skip((page - 1) * limit).sort({ firstName: -1 });
+        result.data = await this.customerModel.find().limit(limit).skip((page - 1) * limit).sort({ firstName: -1 });
       }
       else {
-        result.data = await this.employeeModel.find(
+        result.data = await this.customerModel.find(
           {
             '$or': [
               { 'firstName': { $regex: model.search } },
@@ -96,7 +101,7 @@ export class EmployeeService {
         ).limit(limit).skip((page - 1) * limit).sort({ firstName: -1 });
 
       }
-      result.metadata = await this.employeeModel.countDocuments()
+      result.metadata = await this.customerModel.countDocuments()
 
       return result
 
@@ -109,7 +114,7 @@ export class EmployeeService {
 
 
   async findOne(id: string) {
-    return this.employeeModel.findById(id);
+    return this.customerModel.findById(id);
   }
   /**
    * @param id 
@@ -119,30 +124,34 @@ export class EmployeeService {
    *
    */
 
-  // async updateDetails(id: string, updateCustomerDto: UpdateCustomerDto): Promise<EmployeeDocument> {
-  //   const result: any = { data: [], metadata: null, error: [] }
+  async updateDetails(id: string, updateDto: UpdateDto): Promise<CustomerDocument> {
+    const result: any = { data: [], metadata: null, error: [] }
 
-  //   try {
-  //     const { hobbies, ...rest } = updateCustomerDto;
-  //     const existingUser = await this.employeeModel.findOne({ _id: id }).lean()
-  //     if (!existingUser) {
-  //       result.error = { message: "Employee does not exists" }
-  //       return result
-  //     }
-  //     const updatedHobbies = [...existingUser.hobbies, ...updateCustomerDto.hobbies];
+    try {
+      const { hobbies,password, ...rest } = updateDto;
+      if(password){
+        result.error = { message: "updating password is not allowed" }
+        return result
+      }
+      const existingUser = await this.customerModel.findOne({ _id: id }).lean()
+      if (!existingUser) {
+        result.error = { message: "user does not exists" }
+        return result
+      }
+      const updatedHobbies = [...existingUser.hobbies, ...updateDto.hobbies];
 
-  //     const finlaobj = { ...updatedHobbies, ...rest }
-  //     console.log(finlaobj, 'dddddd')
-  //     return await this.employeeModel.findByIdAndUpdate(id, { $set: (finlaobj) }, { new: true });
-  //   } catch (error) {
-  //     console.log(error)
-  //     return error
-  //   }
-  // }
+      const finalobj = { ...updatedHobbies, ...rest }
+      console.log(finalobj)
+      return await this.customerModel.findByIdAndUpdate(id, { $set: (finalobj) }, { new: true });
+    } catch (error) {
+      console.log(error)
+      return error
+    }
+  }
 
 
 
-  async changePassword(updateDto: UpdateDto): Promise<EmployeeDocument> {
+  async changePassword(updateDto: UpdateDto): Promise<CustomerDocument> {
     const result: any = { data: [], metadata: null, error: [] }
 
     try {
@@ -156,7 +165,7 @@ export class EmployeeService {
       const saltOrRounds = 10;
       const hash = await bcrypt.hash(oldPassword, saltOrRounds);
 
-      const existingUser = await this.employeeModel.findOne({ email });
+      const existingUser = await this.customerModel.findOne({ email });
       if (!existingUser) {
         result.error = { message: "employee with this email does not exists" }
         return result
@@ -179,7 +188,7 @@ export class EmployeeService {
     }
   }
 
-  async resetPassword(updateDto: UpdateDto): Promise<EmployeeDocument> {
+  async resetPassword(updateDto: UpdateDto): Promise<CustomerDocument> {
     const result: any = { data: [], metadata: null, error: [] }
     try {
       const { email, otp, newPassword, confirmPassword }: any = updateDto;
@@ -189,9 +198,9 @@ export class EmployeeService {
         return result
       }
 
-      const existingUser = await this.employeeModel.findOne({ email });
+      const existingUser = await this.customerModel.findOne({ email });
       if (!existingUser) {
-        result.error = { message: "employee with this email does not exists" }
+        result.error = { message: "user with this email does not exists" }
         return result
       }
 
@@ -237,12 +246,12 @@ export class EmployeeService {
   async remove(id: string) {
     const result: any = { data: [], metadata: null, error: [] }
     try {
-      const findEmployee = this.employeeModel.findOne({ id })
+      const findEmployee = this.customerModel.findOne({ id })
       if (!findEmployee) {
         result.error = { message: "employee does not exists" }
         return result
       }
-      const removeEmployee = this.employeeModel.findByIdAndDelete(id);
+      const removeEmployee = this.customerModel.findByIdAndDelete(id);
 
     } catch (error) {
       return error
@@ -250,12 +259,12 @@ export class EmployeeService {
   }
 
 
-  async forgetPasswordEmail(createEmployeeDto: CreateEmployeeDto): Promise<EmployeeDocument> {
+  async forgetPasswordEmail(createEmployeeDto: CreateCustomerDto): Promise<CustomerDocument> {
     const result: any = { data: [], metadata: null, error: [] }
     try {
       const { email } = createEmployeeDto;
 
-      const existingUser = await this.employeeModel.findOne({ email });
+      const existingUser = await this.customerModel.findOne({ email });
       if (!existingUser) {
         result.error = { message: "employee with this email does not exists" }
         return result
@@ -289,11 +298,11 @@ export class EmployeeService {
     }
   }
 
-  async findByAttribute(loginDto: LoginDto): Promise<EmployeeDocument> {  
+  async findByAttribute(loginDto: LoginDto): Promise<CustomerDocument> {  
     try { 
       const {email, password} = loginDto 
       
-      const existingUser = await this.employeeModel.findOne({email}).lean()
+      const existingUser = await this.customerModel.findOne({email}).lean()
       if (!existingUser) {
         return null
       }
@@ -301,7 +310,7 @@ export class EmployeeService {
       if (!isMatch) {
         return null
       }
-      return this.employeeModel.findByIdAndUpdate(existingUser);
+      return this.customerModel.findByIdAndUpdate(existingUser);
     } catch (error) {
       return error
     } 

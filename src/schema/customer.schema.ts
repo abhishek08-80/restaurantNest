@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
   import {Hobbies, Role} from '../utills/enums/enum'
   
-export const employeeSignupValidation = Joi.object({
+export const customerSignupValidation = Joi.object({
   _id: Joi.string().optional(),
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
@@ -11,12 +11,12 @@ export const employeeSignupValidation = Joi.object({
   'password'),
   // role: Joi.string().valid('Admin','Staff')
   role: Joi.string().valid(...Object.values(Role)),
+  hobbies: Joi.array().items(Joi.string().valid(...Object.values(Hobbies))).optional(),
   otp: Joi.number().optional(),
-  otpExpiration: Joi.date().optional(),
-  restaurantId: Joi.string().required()
+  otpExpiration: Joi.date().optional()
 })
 
-export const employeeUpdateValidation = Joi.object().keys({
+export const customerUpdateValidation = Joi.object().keys({
   _id: Joi.string().optional(),
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
@@ -28,10 +28,11 @@ export const employeeUpdateValidation = Joi.object().keys({
   'password'),
   confirmPassword: Joi.string().optional().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, 
   'password'),
+  hobbies: Joi.array().items(Joi.string().valid(...Object.values(Hobbies))).optional()
 })
 
 
-export const employeeResetValidation = Joi.object().keys({
+export const customerResetValidation = Joi.object().keys({
   email: Joi.string().email().required(),
   oldPassword: Joi.string().required().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, 
       'password'),
@@ -41,7 +42,7 @@ export const employeeResetValidation = Joi.object().keys({
       'password')
 })
 
-export const employeeForgetValidation = Joi.object().keys({
+export const customerForgetValidation = Joi.object().keys({
   email: Joi.string().email().required(),
   newPassword: Joi.string().required().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, 
       'password'),
@@ -51,7 +52,7 @@ export const employeeForgetValidation = Joi.object().keys({
       otpExpiration: Joi.date().optional()
 })
 
-export const employeeLoginValidation = Joi.object().keys({
+export const customerLoginValidation = Joi.object().keys({
   email: Joi.string().email().required(),
   password: Joi.string().required().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/, 
       'password'),

@@ -5,16 +5,14 @@ import {
     forwardRef
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { EmployeeService } from 'src/employee/employee.service';
-import { User } from './../user/user.entity';
-import { mailTransporter } from 'src/email/email';
+import { CustomerService } from 'src/customer/customer.service';
 
 @Injectable()
 
 export class AuthService {
     constructor(
         private jwtservice: JwtService,
-        private employeeService: EmployeeService,
+        private customerService: CustomerService,
     ) {}
 
 
@@ -26,16 +24,17 @@ export class AuthService {
             // let obj = {
             //     email:user?.email
             // }
-            const isExist = await this.employeeService.findByAttribute(user)
-            delete isExist?.password
+            const isExist = await this.customerService.findByAttribute(user)
+            // delete isExist?.password
             if (!isExist) {
                 result.error = { message: "email or password do not match" }
                 return result.error
             }
+            console.log(isExist)
             const payload = { userId: isExist.id, role: isExist.role };
             return {
                 access_token: this.jwtservice.sign(payload),
-                employee: {
+                customer: {
                     'email': isExist.email,
                     'address': isExist.address,
                     'firstName': isExist.firstName,
